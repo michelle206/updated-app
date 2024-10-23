@@ -5,6 +5,7 @@ import plotly.express as px
 import folium
 from streamlit_folium import st_folium
 from datetime import datetime
+import plotly.graph_objects as go
 
 # Initialize SQLite database
 def init_db():
@@ -194,13 +195,13 @@ def notifications_page(cursor):
 # Main Streamlit app logic
 def main():
     st.sidebar.title("Navigation")
-    selection = st.sidebar.selectbox("Go to", ["Data Input", "Notifications", "Medication Tracker"])
+    selection = st.sidebar.selectbox("Go to", ["Medical Data", "Notifications", "Medication Tracker", "User Info"])  # Added "User Info"
 
     # Initialize the database
     conn, cursor = init_db()
 
-    if selection == "Data Input":
-        st.title("Senior Safe - Medical Data Input")
+    if selection == "Medical Data":
+        st.title("Senior Safe - Medical Data")
 
         # Use columns for neater input layout
         col1, col2 = st.columns(2)
@@ -232,7 +233,7 @@ def main():
 
     elif selection == "Medication Tracker":
         st.title("Medication Tracker")
-        
+
         # Input form for medication logging
         name = st.text_input("Patient Name")
         med_name = st.text_input("Medication Name")
@@ -248,6 +249,37 @@ def main():
         # Display medication history
         st.write("### Medication History")
         df_med = view_medications(cursor)
+
+    elif selection == "User Info":  # New page for User Info
+        st.title("User Info Form")
+
+        # Form inputs
+        name = st.text_input("Name")
+        age = st.text_input("Age")
+        phone = st.text_input("Phone Number")
+        email = st.text_input("Email")
+        medication = st.text_input("Medication")
+        allergies = st.text_input("Allergies")
+        insurance = st.text_input("Insurance Information")
+
+        # Submit button to handle user info submission
+        if st.button("Submit"):
+            if not name or not age or not phone or not email:
+                st.error("Please fill in all required fields (Name, Age, Phone, and Email).")
+            else:
+                # Process the input data here (you could also store it in the database)
+                st.success("User info submitted successfully!")
+
+        # Display the entered data back to the user
+        if name and age and phone and email:
+            st.write(f"**Name**: {name}")
+            st.write(f"**Age**: {age}")
+            st.write(f"**Phone**: {phone}")
+            st.write(f"**Email**: {email}")
+            st.write(f"**Medication**: {medication}")
+            st.write(f"**Allergies**: {allergies}")
+            st.write(f"**Insurance Info**: {insurance}")
+
 
 if __name__ == "__main__":
     main()
