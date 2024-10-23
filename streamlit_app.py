@@ -176,8 +176,8 @@ def notifications_page(cursor):
     st.write("### Nearby Hospital Route")
     
     # Example location (lat, lon) - Simulating user location
-    user_location = [35.7796, -78.6382]  # Raleigh, NC (dummy)
-    nearest_hospital = [35.7801, -78.6392]  # Dummy hospital location
+    user_location = [35.797103, -78.85597]  # My house (200 Sterling)
+    nearest_hospital = [35.7422, -78.7811]  # Wakemed Cary Hospital
     
     # Create map with user location and hospital
     map_ = folium.Map(location=user_location, zoom_start=14)
