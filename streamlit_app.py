@@ -42,11 +42,11 @@ def init_db():
             timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
         )
     """)
-
+    
     conn.commit()
     return conn, cursor
 
-# Function to validate blood pressure input format
+# Validate blood pressure input format
 def validate_bp(bp):
     parts = bp.split('/')
     if len(parts) != 2:
@@ -82,7 +82,7 @@ def submit_data(name, age, bp, hr, conn, cursor):
     """, (name, int(age), bp, int(hr)))
     conn.commit()
 
-    # Check for abnormal data and create a notification if needed
+    # Check for abnormalities
     abnormality = detect_abnormal_data(name, bp, hr)
     if abnormality:
         cursor.execute("""
@@ -101,8 +101,10 @@ def detect_abnormal_data(name, bp, hr):
 
     if hr < 60 or hr > 100:
         return {"data": f"Heart Rate: {hr} bpm", "type": "Heart Rate"}
+
     if systolic > 140 or diastolic > 90:
         return {"data": f"Blood Pressure: {systolic}/{diastolic} mmHg", "type": "Blood Pressure"}
+
     return None
 
 # View submitted data as a dataframe
@@ -137,10 +139,29 @@ def view_medications(cursor):
         st.warning("No medications logged.")
         return pd.DataFrame()
 
+# Plot heart rate and blood pressure
+def plot_data(df):
+    if not df.empty:
+        df['Timestamp'] = pd.to_datetime(df['Timestamp'])
+        
+        # Plot heart rate
+        fig_hr = px.line(df, x='Timestamp', y='Heart Rate', title='Heart Rate Over Time', markers=True)
+        st.plotly_chart(fig_hr)
+
+        # Split blood pressure into systolic and diastolic
+        df['Systolic'] = df['Blood Pressure'].apply(lambda x: int(x.split('/')[0]))
+        df['Diastolic'] = df['Blood Pressure'].apply(lambda x: int(x.split('/')[1]))
+
+        # Plot blood pressure
+        fig_bp = px.line(df, x='Timestamp', y=['Systolic', 'Diastolic'], 
+                         title='Blood Pressure Over Time', markers=True)
+        st.plotly_chart(fig_bp)
+
 # Notifications Page
 def notifications_page(cursor):
     st.write("### Notifications")
 
+    # Fetch notifications from the database
     cursor.execute("SELECT * FROM notifications ORDER BY timestamp DESC")
     notifications = cursor.fetchall()
 
@@ -153,14 +174,21 @@ def notifications_page(cursor):
     # Simulate a map with the user's current location and the nearest hospital
     st.write("### Nearby Hospital Route")
     
+    # Example location (lat, lon) - Simulating user location
     user_location = [35.7796, -78.6382]  # Raleigh, NC (dummy)
     nearest_hospital = [35.7801, -78.6392]  # Dummy hospital location
     
+    # Create map with user location and hospital
     map_ = folium.Map(location=user_location, zoom_start=14)
+    
+    # Add markers for user location and hospital
     folium.Marker(user_location, tooltip="Your Location", icon=folium.Icon(color="blue")).add_to(map_)
     folium.Marker(nearest_hospital, tooltip="Nearest Hospital", icon=folium.Icon(color="red")).add_to(map_)
+    
+    # Draw route (simulated)
     folium.PolyLine(locations=[user_location, nearest_hospital], color="green", weight=2.5).add_to(map_)
     
+    # Display map in Streamlit
     st_folium(map_, width=700, height=500)
 
 # Main Streamlit app logic
@@ -194,6 +222,11 @@ def main():
         st.write("### Submitted Medical Data")
         df = view_data(cursor)
 
+        # Plot heart rate and blood pressure with abnormal data highlighted
+        if not df.empty:
+            st.write("### Visualizations")
+            plot_data(df)
+
     elif selection == "Notifications":
         notifications_page(cursor)
 
@@ -215,8 +248,6 @@ def main():
         # Display medication history
         st.write("### Medication History")
         df_med = view_medications(cursor)
-
-# (Include the log_medication and view_medications functions here)
 
 if __name__ == "__main__":
     main()
