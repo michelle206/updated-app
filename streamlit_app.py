@@ -12,7 +12,7 @@ def init_db():
     conn = sqlite3.connect("medical_data.db")
     cursor = conn.cursor()
 
-    # Create tables for medical data, notifications, and medications
+    # Create tables for medical data, notifications, medications, and emergency contacts
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS medical_data (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -40,6 +40,16 @@ def init_db():
             patient_name TEXT NOT NULL,
             medication_name TEXT NOT NULL,
             dosage TEXT NOT NULL,
+            timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS emergency_contacts (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            relationship TEXT NOT NULL,
+            phone TEXT NOT NULL,
             timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
         )
     """)
@@ -192,10 +202,29 @@ def notifications_page(cursor):
     # Display map in Streamlit
     st_folium(map_, width=700, height=500)
 
+# Submit emergency contact to the database
+def submit_contact(name, relationship, phone, conn, cursor):
+    cursor.execute("""
+        INSERT INTO emergency_contacts (name, relationship, phone)
+        VALUES (?, ?, ?)
+    """, (name, relationship, phone))
+    conn.commit()
+    st.success("Emergency contact added successfully!")
+
+# View emergency contacts as a dataframe
+def view_contacts(cursor):
+    cursor.execute("SELECT * FROM emergency_contacts")
+    records = cursor.fetchall()
+    if records:
+        df = pd.DataFrame(records, columns=["ID", "Name", "Relationship", "Phone", "Timestamp"])
+        st.dataframe(df)
+    else:
+        st.warning("No emergency contacts found.")
+
 # Main Streamlit app logic
 def main():
     st.sidebar.title("Navigation")
-    selection = st.sidebar.selectbox("Go to", ["Medical Data", "Notifications", "Medication Tracker", "User Info"])  # Added "User Info"
+    selection = st.sidebar.selectbox("Go to", ["Medical Data", "Notifications", "Medication Tracker", "Emergency Contacts", "User Info"])
 
     # Initialize the database
     conn, cursor = init_db()
@@ -250,6 +279,24 @@ def main():
         st.write("### Medication History")
         df_med = view_medications(cursor)
 
+    elif selection == "Emergency Contacts":
+        st.title("Emergency Contacts")
+
+        # Input form for emergency contact
+        contact_name = st.text_input("Contact Name")
+        relationship = st.text_input("Relationship")
+        phone = st.text_input("Phone Number")
+
+        if st.button("Add Emergency Contact"):
+            if contact_name and relationship and phone:
+                submit_contact(contact_name, relationship, phone, conn, cursor)
+            else:
+                st.error("Please fill in all fields.")
+
+        # Display emergency contacts
+        st.write("### Emergency Contacts List")
+        view_contacts(cursor)
+
     elif selection == "User Info":  # New page for User Info
         st.title("User Info Form")
 
@@ -279,7 +326,6 @@ def main():
             st.write(f"**Medication**: {medication}")
             st.write(f"**Allergies**: {allergies}")
             st.write(f"**Insurance Info**: {insurance}")
-
 
 if __name__ == "__main__":
     main()
