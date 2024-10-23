@@ -5,6 +5,7 @@ import plotly.express as px
 import folium
 from streamlit_folium import st_folium
 from datetime import datetime
+import plotly.graph_objects as go
 
 # Initialize SQLite database
 def init_db():
@@ -140,22 +141,43 @@ def view_medications(cursor):
         return pd.DataFrame()
 
 # Plot heart rate and blood pressure
+# Plot heart rate and blood pressure, highlighting abnormal values
 def plot_data(df):
     if not df.empty:
-        df['Timestamp'] = pd.to_datetime(df['Timestamp'])
-        
-        # Plot heart rate
-        fig_hr = px.line(df, x='Timestamp', y='Heart Rate', title='Heart Rate Over Time', markers=True)
-        st.plotly_chart(fig_hr)
-
-        # Split blood pressure into systolic and diastolic
+        # Identify abnormal heart rates
+        df['Heart Rate Abnormal'] = df['Heart Rate'].apply(lambda x: x < 60 or x > 100)
         df['Systolic'] = df['Blood Pressure'].apply(lambda x: int(x.split('/')[0]))
         df['Diastolic'] = df['Blood Pressure'].apply(lambda x: int(x.split('/')[1]))
-
-        # Plot blood pressure
-        fig_bp = px.line(df, x='Timestamp', y=['Systolic', 'Diastolic'], 
-                         title='Blood Pressure Over Time', markers=True)
-        st.plotly_chart(fig_bp)
+       
+        # Identify abnormal blood pressure values
+        df['Blood Pressure Abnormal'] = df.apply(lambda row: row['Systolic'] > 140 or row['Diastolic'] > 90, axis=1)
+ 
+        # Plot heart rate with abnormal points highlighted
+        fig1 = px.scatter(df, x='Timestamp', y='Heart Rate', color='Heart Rate Abnormal',
+                  color_discrete_map={True: 'red', False: 'blue'},
+                  title='Heart Rate Over Time', labels={'Heart Rate Abnormal': 'Abnormal Heart Rate'})
+ 
+        # Add a line connecting all data points
+        fig1.add_trace(go.Scatter(x=df['Timestamp'], y=df['Heart Rate'],
+                                mode='lines', line=dict(color='gray'), name='Line Through Points'))
+ 
+        st.plotly_chart(fig1)
+ 
+        # Scatter plot for Systolic and Diastolic with colors based on 'Blood Pressure Abnormal'
+        fig2 = px.scatter(df, x='Timestamp', y=['Systolic', 'Diastolic'], color='Blood Pressure Abnormal',
+                        color_discrete_map={True: 'red', False: 'blue'},
+                        title='Blood Pressure (Systolic/Diastolic) Over Time',
+                        labels={'Blood Pressure Abnormal': 'Abnormal Blood Pressure'})
+ 
+        # Add a line for Systolic points
+        fig2.add_trace(go.Scatter(x=df['Timestamp'], y=df['Systolic'],
+                                mode='lines', line=dict(color='gray'), name='Systolic Line'))
+ 
+        # Add a line for Diastolic points
+        fig2.add_trace(go.Scatter(x=df['Timestamp'], y=df['Diastolic'],
+                                mode='lines', line=dict(color='darkgray'), name='Diastolic Line'))
+ 
+        st.plotly_chart(fig2)
 
 # Notifications Page
 def notifications_page(cursor):
