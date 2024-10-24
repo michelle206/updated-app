@@ -224,7 +224,7 @@ def view_contacts(cursor):
 # Main Streamlit app logic
 def main():
     st.sidebar.title("Navigation")
-    selection = st.sidebar.selectbox("Go to", ["Medical Data", "Notifications", "Medication Tracker", "Emergency Contacts", "User Info"])
+    selection = st.sidebar.selectbox("Go to", ["Medical Data", "Notifications", "Medication Tracker", "Emergency Contacts", "User Info", "Learning"])
 
     # Initialize the database
     conn, cursor = init_db()
@@ -326,6 +326,42 @@ def main():
             st.write(f"**Medication**: {medication}")
             st.write(f"**Allergies**: {allergies}")
             st.write(f"**Insurance Info**: {insurance}")
+
+    elif selection == "Learning":  # New Learning tab
+        st.title("Learning About Heart Health")
+        st.write("""
+        ### Common Heart and Circulatory Problems
+        1. **Angina**: Chest pain from reduced blood flow to the heart.
+        2. **Shortness of Breath**: Difficulty breathing during physical activity.
+        3. **Heart Attack**: Can occur due to coronary artery disease.
+        4. **Arrhythmias**: Abnormal heart rhythms that can happen for various reasons.
+        5. **Anemia**: Low red blood cells, possibly from poor nutrition, infections, or blood loss.
+        6. **Atherosclerosis**: Hardening of arteries due to fatty deposits, leading to narrow or blocked blood vessels.
+        7. **Congestive Heart Failure**: Common in older adults, particularly those over 75.
+        8. **Coronary Artery Disease**: Often caused by atherosclerosis.
+        9. **High Blood Pressure**: More common with age; medication should be managed with a doctor.
+        10. **Heart Valve Diseases**: Aortic stenosis is a common condition.
+        11. **Transient Ischemic Attacks (TIAs)**: Temporary disruptions in blood flow to the brain can lead to strokes.
+        12. **Other Issues**:
+            - Blood clots
+            - Deep vein thrombosis
+            - Peripheral vascular disease (pain in the legs while walking)
+            - Varicose veins
+            - Aneurysms (bulging arteries that can burst and cause serious issues)
+        """)
+
+        st.write("""
+        ### Prevention Tips
+        1. **Manage Risk Factors**: Control high blood pressure, cholesterol, diabetes, obesity, and avoid smoking.
+        2. **Eat Healthy**: Follow a heart-healthy diet with low saturated fats and cholesterol. Keep a healthy weight.
+        3. **Exercise Regularly**: Helps with weight control, diabetes management, and overall heart health. Start with moderate activity and consult your doctor first.
+        4. **Regular Check-Ups**:
+            - Get your blood pressure checked annually.
+            - If you have diabetes or heart disease, monitor more frequently.
+            - Check cholesterol every 5 years if it's normal; more often if you have certain conditions.
+        """)
+
+        st.write("By following these guidelines, you can support your heart and circulatory health!")
 
 if __name__ == "__main__":
     main()
