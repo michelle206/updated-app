@@ -224,12 +224,84 @@ def view_contacts(cursor):
 # Main Streamlit app logic
 def main():
     st.sidebar.title("Navigation")
-    selection = st.sidebar.selectbox("Go to", ["User Info", "Emergency Contacts", "Medication Tracker", "Medical Data", "Notifications", "Learning"])
+    selection = st.sidebar.selectbox("Go to", ["User Information", "Emergency Contacts", "Medication Tracker", "Medical Data", "Notifications", "Learning"])
 
     # Initialize the database
     conn, cursor = init_db()
 
-    if selection == "Medical Data":
+    if selection == "User Information":  # Updated to "User Information"
+        st.title("User Information Form")  # Updated title
+
+        # Form inputs
+        name = st.text_input("Name")
+        age = st.text_input("Age")
+        birthdate = st.date_input("Birthdate")  # Input for birthdate
+        phone = st.text_input("Phone Number")
+        email = st.text_input("Email")
+        medication = st.text_input("Medication")
+        allergies = st.text_input("Allergies")
+        chronic_conditions = st.text_area("Chronic Conditions")  # Input for chronic conditions
+        procedures = st.text_area("Medical Procedures")  # Input for medical procedures
+        insurance = st.text_input("Insurance Information")
+
+        # Submit button to handle user info submission
+        if st.button("Submit"):
+            if not name or not age or not phone or not email:
+                st.error("Please fill in all required fields (Name, Age, Phone, and Email).")
+            else:
+                st.success("User information submitted successfully!")
+
+        # Display the entered data back to the user
+        if name and age and phone and email:
+            st.write(f"**Name**: {name}")
+            st.write(f"**Age**: {age}")
+            st.write(f"**Birthdate**: {birthdate}")
+            st.write(f"**Phone**: {phone}")
+            st.write(f"**Email**: {email}")
+            st.write(f"**Medication**: {medication}")
+            st.write(f"**Allergies**: {allergies}")
+            st.write(f"**Chronic Conditions**: {chronic_conditions}")
+            st.write(f"**Medical Procedures**: {procedures}")
+            st.write(f"**Insurance Info**: {insurance}")
+
+    elif selection == "Emergency Contacts":
+        st.title("Emergency Contacts")
+
+        # Input form for emergency contact
+        contact_name = st.text_input("Contact Name")
+        relationship = st.text_input("Relationship")
+        phone = st.text_input("Phone Number")
+
+        if st.button("Add Emergency Contact"):
+            if contact_name and relationship and phone:
+                submit_contact(contact_name, relationship, phone, conn, cursor)
+            else:
+                st.error("Please fill in all fields.")
+
+        # Display emergency contacts
+        st.write("### Emergency Contacts List")
+        view_contacts(cursor)
+
+    elif selection == "Medication Tracker":
+        st.title("Medication Tracker")
+
+        # Input form for medication logging
+        name = st.text_input("Patient Name")
+        med_name = st.text_input("Medication Name")
+        dosage = st.text_input("Dosage")
+
+        if st.button("Log Medication"):
+            if name and med_name and dosage:
+                log_medication(name, med_name, dosage, conn, cursor)
+                st.success(f"{med_name} logged for {name} successfully!")
+            else:
+                st.error("Please fill in all fields.")
+
+        # Display medication history
+        st.write("### Medication History")
+        df_med = view_medications(cursor)
+
+    elif selection == "Medical Data":
         st.title("Senior Safe - Medical Data")
 
         # Use columns for neater input layout
@@ -260,80 +332,7 @@ def main():
     elif selection == "Notifications":
         notifications_page(cursor)
 
-    elif selection == "Medication Tracker":
-        st.title("Medication Tracker")
-
-        # Input form for medication logging
-        name = st.text_input("Patient Name")
-        med_name = st.text_input("Medication Name")
-        dosage = st.text_input("Dosage")
-
-        if st.button("Log Medication"):
-            if name and med_name and dosage:
-                log_medication(name, med_name, dosage, conn, cursor)
-                st.success(f"{med_name} logged for {name} successfully!")
-            else:
-                st.error("Please fill in all fields.")
-
-        # Display medication history
-        st.write("### Medication History")
-        df_med = view_medications(cursor)
-
-    elif selection == "Emergency Contacts":
-        st.title("Emergency Contacts")
-
-        # Input form for emergency contact
-        contact_name = st.text_input("Contact Name")
-        relationship = st.text_input("Relationship")
-        phone = st.text_input("Phone Number")
-
-        if st.button("Add Emergency Contact"):
-            if contact_name and relationship and phone:
-                submit_contact(contact_name, relationship, phone, conn, cursor)
-            else:
-                st.error("Please fill in all fields.")
-
-        # Display emergency contacts
-        st.write("### Emergency Contacts List")
-        view_contacts(cursor)
-
-    elif selection == "User Information":  # New page for User Info
-        st.title("User Information Form")
-
-        # Form inputs
-        name = st.text_input("Name")
-        age = st.text_input("Age")
-        birthdate = st.date_input("Birthdate")
-        phone = st.text_input("Phone Number")
-        email = st.text_input("Email")
-        medication = st.text_input("Medication")
-        allergies = st.text_input("Allergies")
-        chronic_conditions = st.text_area("Chronic Conditions")
-        procedures = st.text_area("Medical Procedures")
-        insurance = st.text_input("Insurance Information")
-
-        # Submit button to handle user info submission
-        if st.button("Submit"):
-            if not name or not age or not phone or not email:
-                st.error("Please fill in all required fields (Name, Age, Phone, and Email).")
-            else:
-                # Process the input data here (you could also store it in the database)
-                st.success("User info submitted successfully!")
-
-        # Display the entered data back to the user
-        if name and age and phone and email:
-            st.write(f"**Name**: {name}")
-            st.write(f"**Age**: {age}")
-            st.write(f"**Birthdate**: {birthdate}")
-            st.write(f"**Phone**: {phone}")
-            st.write(f"**Email**: {email}")
-            st.write(f"**Medication**: {medication}")
-            st.write(f"**Allergies**: {allergies}")
-            st.write(f"**Chronic Conditions**: {chronic_conditions}")
-            st.write(f"**Medical Procedures**: {procedures}")
-            st.write(f"**Insurance Info**: {insurance}")
-
-    elif selection == "Learning":  # New Learning tab
+    elif selection == "Learning":
         st.title("Learning About Heart Health")
         st.write("""
         ### Common Heart and Circulatory Problems
