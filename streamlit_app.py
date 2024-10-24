@@ -224,7 +224,7 @@ def view_contacts(cursor):
 # Main Streamlit app logic
 def main():
     st.sidebar.title("Navigation")
-    selection = st.sidebar.selectbox("Go to", ["Medical Data", "Notifications", "Medication Tracker", "Emergency Contacts", "User Info", "Learning"])
+    selection = st.sidebar.selectbox("Go to", ["User Info", "Emergency Contacts", "Medication Tracker", "Medical Data", "Notifications", "Learning"])
 
     # Initialize the database
     conn, cursor = init_db()
@@ -297,16 +297,19 @@ def main():
         st.write("### Emergency Contacts List")
         view_contacts(cursor)
 
-    elif selection == "User Info":  # New page for User Info
-        st.title("User Info Form")
+    elif selection == "User Information":  # New page for User Info
+        st.title("User Information Form")
 
         # Form inputs
         name = st.text_input("Name")
         age = st.text_input("Age")
+        birthdate = st.date_input("Birthdate")
         phone = st.text_input("Phone Number")
         email = st.text_input("Email")
         medication = st.text_input("Medication")
         allergies = st.text_input("Allergies")
+        chronic_conditions = st.text_area("Chronic Conditions")
+        procedures = st.text_area("Medical Procedures")
         insurance = st.text_input("Insurance Information")
 
         # Submit button to handle user info submission
@@ -321,10 +324,13 @@ def main():
         if name and age and phone and email:
             st.write(f"**Name**: {name}")
             st.write(f"**Age**: {age}")
+            st.write(f"**Birthdate**: {birthdate}")
             st.write(f"**Phone**: {phone}")
             st.write(f"**Email**: {email}")
             st.write(f"**Medication**: {medication}")
             st.write(f"**Allergies**: {allergies}")
+            st.write(f"**Chronic Conditions**: {chronic_conditions}")
+            st.write(f"**Medical Procedures**: {procedures}")
             st.write(f"**Insurance Info**: {insurance}")
 
     elif selection == "Learning":  # New Learning tab
